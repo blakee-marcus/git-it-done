@@ -2,7 +2,7 @@ var userFormEl = document.querySelector("#user-form");
 var nameInputEl = document.querySelector("#username");
 var repoContainerEL = document.querySelector("#repos-container");
 var repoSearchTerm = document.querySelector("#repo-search-term");
-
+var languageButtonsEl = document.querySelector("#language-buttons")
 
 var getUserRepos = function(user) {
     //format the github api url
@@ -32,6 +32,9 @@ var formSubmitHandler = function(event) {
 
     if (username) {
         getUserRepos(username);
+
+        //clear old content
+        repoContainerEL.textContent = "";
         nameInputEl.value = "";
     } else {
         alert("Please enter a GitHub username");
@@ -39,8 +42,6 @@ var formSubmitHandler = function(event) {
 };
 
 var displayRepos = function(repos, searchTerm) {
-    console.log(repos);
-    console.log(searchTerm);
     
     //check if api returned any repos
     if (repos.length === 0) {
@@ -48,8 +49,6 @@ var displayRepos = function(repos, searchTerm) {
         return;
     }
 
-    //clear old content
-    repoContainerEL.textContent = "";
     repoSearchTerm.textContent = searchTerm;
 
     // loop over repos 
@@ -87,5 +86,33 @@ var displayRepos = function(repos, searchTerm) {
         repoContainerEL.appendChild(repoEl);
     };
 };
+
+var getFeaturedRepos = function(language) {
+    var apiUrl = "https://api.github.com/search/repositories?q=" + language + "+is:featured&sort=help-wanted-issues";
+  
+    fetch(apiUrl).then(function(response) {
+        if (response.ok) {
+            response.json().then(function(data) {
+                displayRepos(data.items, language);
+            });
+        } else {
+            alert("Error: " + response.statusText);
+        }
+    });
+};
+
+var buttonClickHandler = function(event) {
+    // get the language attribute from the clicked element
+    var language = event.target.getAttribute("data-language");
+
+    if (language) {
+        getFeaturedRepos(language);
+
+        // clear old content 
+        repoContainerEL.textContent = "";
+    }
+};
+
 //event listeners
 userFormEl.addEventListener("submit", formSubmitHandler);
+languageButtonsEl.addEventListener("click", buttonClickHandler);
